@@ -19,10 +19,10 @@ fn main() {
     }
     part1!(flashed);
 
-    for i in 100.. {
+    for i in 101.. {
         advance(&mut octopi);
         if octopi.iter().flatten().all(|f| f == &0) {
-            part2!(i + 1);
+            part2!(i);
             break;
         }
     }
@@ -41,37 +41,43 @@ fn advance(octopi: &mut [[u8; 10]; 10]) {
     }
 }
 
-fn flash(octopi: &mut [[u8; 10]; 10], pos: (usize, usize)) {
-    if octopi[pos.1][pos.0] == 0 {
+pub fn flash(octopi: &mut [[u8; 10]; 10], pos: (usize, usize)) {
+    let octopus;
+    unsafe {
+        octopus = octopi.get_unchecked_mut(pos.1).get_unchecked_mut(pos.0);
+    }
+    if *octopus == 0 {
         return;
     }
-    octopi[pos.1][pos.0] += 1;
-    if octopi[pos.1][pos.0] <= 9 {
+    *octopus += 1;
+    if *octopus <= 9 {
         return;
     }
 
-    octopi[pos.1][pos.0] = 0;
+    *octopus = 0;
 
-    let mut xpos = vec![pos.0];
-    let mut ypos = vec![pos.1];
     if pos.0 > 0 {
-        xpos.push(pos.0 - 1);
+        flash(octopi, (pos.0 - 1, pos.1));
+        if pos.1 > 0 {
+            flash(octopi, (pos.0 - 1, pos.1 - 1));
+        }
+        if pos.1 < 9 {
+            flash(octopi, (pos.0 - 1, pos.1 + 1));
+        }
     }
     if pos.0 < 9 {
-        xpos.push(pos.0 + 1);
+        flash(octopi, (pos.0 + 1, pos.1));
+        if pos.1 > 0 {
+            flash(octopi, (pos.0 + 1, pos.1 - 1));
+        }
+        if pos.1 < 9 {
+            flash(octopi, (pos.0 + 1, pos.1 + 1));
+        }
     }
     if pos.1 > 0 {
-        ypos.push(pos.1 - 1);
+        flash(octopi, (pos.0, pos.1 - 1));
     }
     if pos.1 < 9 {
-        ypos.push(pos.1 + 1);
-    }
-    for x in &xpos {
-        for y in &ypos {
-            if (*x, *y) == pos {
-                continue;
-            }
-            flash(octopi, (*x, *y));
-        }
+        flash(octopi, (pos.0, pos.1 + 1));
     }
 }
