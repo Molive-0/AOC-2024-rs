@@ -3,32 +3,31 @@ mod help;
 fn main() {
     let data = input_to_str_vec!("2");
 
-    let mut x = 0i32;
-    let mut y = 0i32;
-    for d in &data {
-        match &d[..d.len() - 2] {
-            "forward" => x += d[8..].parse::<i32>().unwrap(),
-            "down" => y += d[5..].parse::<i32>().unwrap(),
-            "up" => y -= d[3..].parse::<i32>().unwrap(),
-            _ => unreachable!(),
+    let mut total: i32 = 0;
+    for line in &data {
+        if *line == "" {
+            continue;
         }
+        let result =
+            (line.as_bytes()[2] as i8 - line.as_bytes()[0] as i8 - ('X' as i8 - 'A' as i8) + 1)
+                .rem_euclid(3);
+        let decision = line.as_bytes()[2] as i8 - 'X' as i8;
+        let score = (decision + 1 + result * 3) as i32;
+        total += score;
     }
-    part1!(x * y);
+    part1!(total);
 
-    let mut x = 0i32;
-    let mut y = 0i32;
-    let mut aim = 0i32;
-    for d in data {
-        match &d[..d.len() - 2] {
-            "forward" => {
-                let z = d[8..].parse::<i32>().unwrap();
-                x += z;
-                y += aim * z
-            }
-            "down" => aim += d[5..].parse::<i32>().unwrap(),
-            "up" => aim -= d[3..].parse::<i32>().unwrap(),
-            _ => unreachable!(),
+    total = 0;
+    for line in &data {
+        if *line == "" {
+            continue;
         }
+        let result = (line.as_bytes()[2] as i8 - 'X' as i8);
+        let decision =
+            ((line.as_bytes()[2] as i8 - 'X' as i8) + (line.as_bytes()[0] as i8 - 'A' as i8) - 1)
+                .rem_euclid(3);
+        let score = (decision + 1 + result * 3) as i32;
+        total += score;
     }
-    part2!(x * y);
+    part2!(total);
 }
