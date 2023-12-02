@@ -29,7 +29,10 @@ fn main() {
             };
             let mut last = {
                 let p = backwards.position(|c| c.is_ascii_digit()).unwrap();
-                (p, chars.clone().nth_back(p).unwrap().to_string())
+                (
+                    line.len() - p - 1,
+                    chars.clone().nth_back(p).unwrap().to_string(),
+                )
             };
             for number in [
                 "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
@@ -39,12 +42,12 @@ fn main() {
             {
                 if let Some(n) = line.match_indices(number.1).next() {
                     if n.0 < first.0 {
-                        first = (n.0, number.0.to_string());
+                        first = (n.0, (number.0 + 1).to_string());
                     }
                 }
                 if let Some(n) = line.match_indices(number.1).last() {
                     if n.0 > last.0 {
-                        last = (n.0, number.0.to_string());
+                        last = (n.0, (number.0 + 1).to_string());
                     }
                 }
             }
