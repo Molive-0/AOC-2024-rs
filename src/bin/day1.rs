@@ -1,77 +1,59 @@
 #[macro_use]
 mod help;
-
-enum Colours {
-    RED,
-    GREEN,
-    BLUE,
-}
 fn main() {
-    let data = input_to_str_iterator!("2");
+    let data = input_to_str_iterator!("1");
 
-    let games = data
-        .enumerate()
-        .map(|game| {
-            (
-                game.0 + 1,
-                game.1
-                    .split(":")
-                    .last()
-                    .unwrap()
-                    .trim()
-                    .split(";")
-                    .map(|attempt| {
-                        attempt
-                            .split(",")
-                            .map(|colour_set| {
-                                let mut info = colour_set.trim().split(" ").take(2);
-                                let count: usize = info.next().unwrap().parse().unwrap();
-                                let colour = match info.next().unwrap() {
-                                    "red" => Colours::RED,
-                                    "green" => Colours::GREEN,
-                                    "blue" => Colours::BLUE,
-                                    _ => unreachable!(),
-                                };
-                                (count, colour)
-                            })
-                            .collect::<Vec<_>>()
-                    })
-                    .collect::<Vec<_>>(),
-            )
+    part1!(data
+        .map(|line| {
+            let chars = line.chars();
+            let mut forwards = chars.clone();
+            let mut backwards = chars.rev().clone();
+            let first = forwards.find(char::is_ascii_digit).unwrap();
+            let last = backwards.find(char::is_ascii_digit).unwrap();
+            let both = format!("{}{}", first, last);
+            let number: usize = both.parse().unwrap();
+            number
         })
-        .collect::<Vec<_>>();
-
-    part1!(games
-        .iter()
-        .filter(|game| {
-            game.1.iter().all(|attempt| {
-                attempt.iter().all(|set| match set.1 {
-                    Colours::RED => set.0 <= 12,
-                    Colours::GREEN => set.0 <= 13,
-                    Colours::BLUE => set.0 <= 14,
-                })
-            })
-        })
-        .map(|game| game.0)
         .sum::<usize>());
 
-    part2!(games
-        .iter()
-        .map(|game| {
-            game.1
-                .iter()
-                .fold(vec![0, 0, 0], |mut last, attempt| {
-                    for set in attempt {
-                        match set.1 {
-                            Colours::RED => last[0] = last[0].max(set.0),
-                            Colours::GREEN => last[1] = last[1].max(set.0),
-                            Colours::BLUE => last[2] = last[2].max(set.0),
-                        }
+    let data = input_to_str_iterator!("1");
+
+    part2!(data
+        .map(|line| {
+            let chars = line.chars();
+            let mut forwards = chars.clone();
+            let mut backwards = chars.clone().rev();
+            let mut first = {
+                let p = forwards.position(|c| c.is_ascii_digit()).unwrap();
+                (p, chars.clone().nth(p).unwrap().to_string())
+            };
+            let mut last = {
+                let p = backwards.position(|c| c.is_ascii_digit()).unwrap();
+                (
+                    line.len() - p - 1,
+                    chars.clone().nth_back(p).unwrap().to_string(),
+                )
+            };
+            for number in [
+                "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
+            ]
+            .iter()
+            .enumerate()
+            {
+                if let Some(n) = line.match_indices(number.1).next() {
+                    if n.0 < first.0 {
+                        first = (n.0, (number.0 + 1).to_string());
                     }
-                    last
-                })
-                .iter()
-                .product::<usize>()
+                }
+                if let Some(n) = line.match_indices(number.1).last() {
+                    if n.0 > last.0 {
+                        last = (n.0, (number.0 + 1).to_string());
+                    }
+                }
+            }
+            let both = format!("{}{}", first.1, last.1);
+            let number: usize = both.parse().unwrap();
+            number
         })
         .sum::<usize>());
 }
