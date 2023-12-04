@@ -18,7 +18,7 @@ fn main() {
                 .flat_map(|(_, d)| {
                     d.group_by(|(_, c)| c.is_ascii_digit())
                         .into_iter()
-                        .map(|(b, g)| g.collect_vec())
+                        .map(|(_, g)| g.collect_vec())
                         .map(|group| {
                             (
                                 (group[0].0, y),
@@ -75,12 +75,37 @@ fn main() {
         .collect_vec();
 
     part1!(true_numbers
-        .into_iter()
+        .iter()
         .map(|(_, s)| s.parse::<usize>().unwrap())
         .sum::<usize>());
 
-    let gears = items
+    let stars = items
         .iter()
-        .filter(|(_, f)| f.chars().all(|c| c.is_ascii_digit()))
+        .filter(|(_, f)| f.chars().all(|c| c == '*'))
         .collect_vec();
+
+    assert!(stars.iter().all(|(_, f)| f.len() == 1));
+
+    part2!(stars
+        .iter()
+        .map(|((x, y), _)| {
+            let xo = ((*x as isize).saturating_sub(1) as usize)..=x + 1;
+            let yo = ((*y as isize).saturating_sub(1) as usize)..=y + 1;
+            let numbers = true_numbers
+                .iter()
+                .filter(|((nx, ny), ns)| {
+                    let mut range = *nx..(nx + ns.len());
+                    yo.contains(ny) && range.any(|x| xo.contains(&x))
+                })
+                .collect_vec();
+            if numbers.len() == 2 {
+                numbers
+                    .into_iter()
+                    .map(|(_, s)| s.parse::<usize>().unwrap())
+                    .product()
+            } else {
+                0
+            }
+        })
+        .sum::<usize>())
 }
